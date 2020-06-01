@@ -135,6 +135,11 @@ class Function():
     
     def minimizeExternalPenaltyGradientDescent(self, X0: np.ndarray, firstR: float, rFactor: float ,
                                                internalStopError: float, percentileStopError: float):
+        '''
+            Minimizes function using external penalty with increassing weights
+            internalStopError: stop error for each weight r
+            percentileStopError: global percentile error for varying weight r
+        '''
         r = firstR
         def phi(X):
             s = 0
