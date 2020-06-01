@@ -17,14 +17,20 @@ class Function():
             g[1]  >= 0, g[2]  >= 0, ... , g[k]  >= 0
 
     '''
-    def __init__(self, f: Callable[[np.ndarray], float] = None, grad: Callable[[np.ndarray],np.ndarray] = None,
+    def __init__(self, name: str,
+                 f: Callable[[np.ndarray], float] = None,
+                 grad: Callable[[np.ndarray],np.ndarray] = None,
                  g: List[ Callable[[np.ndarray], float] ] = None,
                  gradG: List[ Callable[[np.ndarray], np.ndarray] ] = None):
+        self.name  = name
         self.f     = f
-        self.gradF  = grad
+        self.gradF = grad
         self.g     = g
         self.gradG = gradG
         self.H     = None
+    
+    def __str__(self):
+        return self.name
     
     def constrainsOk(self, X: np.ndarray) -> bool:
         for i in self.g:
@@ -95,11 +101,15 @@ class Function():
     
     def minimizeDirection(self, X0: np.ndarray, direction: np.ndarray) ->  np.ndarray:
         ''' Returns X that minimizes function in direction '''
+        print('\nMinimize '+ self.name +' in direction ', str(direction))
+        print('X0: ',X0 )
         def fDirection(n: float, *args):
             X0 = args[0]
             vector = args[1]
             return self.f(X0+n*vector)
-        return X0 + optimize.minimize(fDirection,np.array([0]),args=(X0,direction))['x']*direction
+        X1 = X0 + optimize.minimize(fDirection,np.array([0]),args=(X0,direction))['x']*direction
+        print("X1: ", X1)
+        return X1
 
     def minimizeGradientDescent(self, X0:np.ndarray, stopError: float) -> np.ndarray:
         direction = -1*self.gradF(X0)
