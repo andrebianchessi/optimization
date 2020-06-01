@@ -17,8 +17,9 @@ class Function():
             g[1]  >= 0, g[2]  >= 0, ... , g[k]  >= 0
 
     '''
-    def __init__(self, f: Callable[[np.ndarray], float], grad: Callable[[np.ndarray],np.ndarray],
-                 g: List[ Callable[[np.ndarray], float] ], gradG: List[ Callable[[np.ndarray], np.ndarray] ]):
+    def __init__(self, f: Callable[[np.ndarray], float], grad: Callable[[np.ndarray],np.ndarray] = None,
+                 g: List[ Callable[[np.ndarray], float] ] = None,
+                 gradG: List[ Callable[[np.ndarray], np.ndarray] ] = None):
         self.f     = f
         self.gradF  = grad
         self.g     = g
@@ -88,6 +89,7 @@ class Function():
         if self.KKTOk(X, lambdas):
             for i in self.getHEigenVals(X):
                 if i<=0:
+                    print('Hessian matrix not positive definite!')
                     return False  
         return True
     
