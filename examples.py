@@ -50,6 +50,18 @@ rFactor = 4
 eInternal = 0.0001
 eExternal = 0.1/100 
 print(F1.minimizeExternalPenaltyGradientDescent(X0, r, rFactor, eInternal, eExternal))
+print(pageBreak)
+
+# Solve with augmented lagrangian
+print("Augmented Lagrangian")
+X0 = np.array([0,0])
+r = 1/16
+rFactor = 4
+eInternal = 0.0001
+eExternal = 0.1/100 
+lagrangianEstimates = [0]
+print(F1.minimizeAugmentedLagrangian(X0, lagrangianEstimates , r, rFactor, eInternal, eExternal))
+print(pageBreak)
 
 
 

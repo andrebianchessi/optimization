@@ -166,12 +166,43 @@ class Function():
             x1 = Phi.minimizeGradientDescent(x0, internalStopError)
         
         return x1
+    
+    def minimizeAugmentedLagrangian(self, X0: np.ndarray, multiplersEstimate: List[float] ,
+                                    firstR: float, rFactor: float ,
+                                    internalStopError: float, percentileStopError: float):
+        r = firstR
+        def phi(X):
+            s = 0
+            for i in range(len(self.g)):
+                s = s + max(multiplersEstimate[i]/(2*r)-self.g[i](X),0)**2
+            return self.f(X) + r * s
+        
+        def gradPhi(X):
+            s = 0
+            for i in range(len(self.g)):
+                if max(-self.g[i](X),0) >0:
+                    s = s + 2 * self.g[i](X) * self.gradG[i](X)
+            return self.gradF(X) + r*s
+        
+        Phi = Function('Penalty problem for ' + self.name, phi, gradPhi)
+
+        x0 = Phi.minimizeGradientDescent(X0, internalStopError)
+
+        r = r * rFactor
+        for i in range(len(multiplersEstimate)):
+            multiplersEstimate[i] = max(multiplersEstimate[i] - 2*r*self.g[i](x0),0)
+
+        x1 = Phi.minimizeGradientDescent(x0, internalStopError)
+
+        while np.linalg.norm(x1-x0)/np.linalg.norm(x0) > percentileStopError:
+            r = r * rFactor
+            for i in range(len(multiplersEstimate)):
+                multiplersEstimate[i] = max(multiplersEstimate[i] - 2*r*self.g[i](x0),0)
+            x0 = x1
+            x1 = Phi.minimizeGradientDescent(x0, internalStopError)
+        
+        return x1
             
-
-
-
-
-        return Phi.minimizeGradientDescent(X0, stopError)
 
 
         
