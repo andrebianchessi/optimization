@@ -65,3 +65,4 @@ def gradF3(X):
     return np.array( [21*2*x - 24*y + 30, -24*x + 14*2*y - 60] )
 
 F3 = Function('f3',f3, gradF3)
+

@@ -101,14 +101,13 @@ class Function():
     
     def minimizeDirection(self, X0: np.ndarray, direction: np.ndarray) ->  np.ndarray:
         ''' Returns X that minimizes function in direction '''
-        print('\nMinimize '+ self.name +' in direction ', str(direction))
-        print('X0: ',X0 )
+        print('\nMinimize '+ self.name +' from '+ str(X0) +' in direction ', str(direction))
         def fDirection(n: float, *args):
             X0 = args[0]
             vector = args[1]
             return self.f(X0+n*vector)
         X1 = X0 + optimize.minimize(fDirection,np.array([0]),args=(X0,direction))['x']*direction
-        print("X1: ", X1)
+        print(" -> ", X1)
         return X1
 
     def minimizeGradientDescent(self, X0:np.ndarray, stopError: float) -> np.ndarray:
@@ -133,6 +132,43 @@ class Function():
             return x1
         else:
             return self.minimizePowell(x1, directions, stopError)
+    
+    def minimizeExternalPenaltyGradientDescent(self, X0: np.ndarray, firstR: float, rFactor: float ,
+                                               internalStopError: float, percentileStopError: float):
+        r = firstR
+        def phi(X):
+            s = 0
+            for i in self.g:
+                s = s + max(-i(X),0)**2
+            return self.f(X) + r * s
+        
+        def gradPhi(X):
+            s = 0
+            for i in range(len(self.g)):
+                if max(-self.g[i](X),0) >0:
+                    s = s + 2 * self.g[i](X) * self.gradG[i](X)
+            return self.gradF(X) + r*s
+        
+        Phi = Function('Penalty problem for ' + self.name, phi, gradPhi)
+
+        x0 = Phi.minimizeGradientDescent(X0, internalStopError)
+        r = r * rFactor
+        x1 = Phi.minimizeGradientDescent(x0, internalStopError)
+
+        while np.linalg.norm(x1-x0)/np.linalg.norm(x0) > percentileStopError:
+            r = r * rFactor
+            x0 = x1
+            x1 = Phi.minimizeGradientDescent(x0, internalStopError)
+        
+        return x1
+            
+
+
+
+
+        return Phi.minimizeGradientDescent(X0, stopError)
+
+
         
         
 
