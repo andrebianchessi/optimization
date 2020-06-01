@@ -17,7 +17,7 @@ class Function():
             g[1]  >= 0, g[2]  >= 0, ... , g[k]  >= 0
 
     '''
-    def __init__(self, f: Callable[[np.ndarray], float], grad: Callable[[np.ndarray],np.ndarray] = None,
+    def __init__(self, f: Callable[[np.ndarray], float] = None, grad: Callable[[np.ndarray],np.ndarray] = None,
                  g: List[ Callable[[np.ndarray], float] ] = None,
                  gradG: List[ Callable[[np.ndarray], np.ndarray] ] = None):
         self.f     = f
@@ -93,12 +93,43 @@ class Function():
                     return False  
         return True
     
-    def minimizeDirection(self, X0: np.ndarray, direction: np.ndarray) ->  scipy.optimize.OptimizeResult:
+    def minimizeDirection(self, X0: np.ndarray, direction: np.ndarray) ->  np.ndarray:
+        ''' Returns X that minimizes function in direction '''
         def fDirection(n: float, *args):
             X0 = args[0]
             vector = args[1]
             return self.f(X0+n*vector)
-        return optimize.minimize(fDirection,np.array([0]),args=(X0,direction))
+        return X0 + optimize.minimize(fDirection,np.array([0]),args=(X0,direction))['x']*direction
+
+    def minimizeGradientDescent(self, X0:np.ndarray, stopError: float) -> np.ndarray:
+        direction = -1*self.gradF(X0)
+        X1 = self.minimizeDirection(X0, direction)
+        if np.linalg.norm(X1-X0) <= stopError:
+            return X1
+        else:
+            return self.minimizeGradientDescent(X1, stopError)
+    
+    def minimizePowell(self, X0: np.ndarray, directions: List[np.ndarray], stopError: float) -> np.ndarray:
+        x0 = X0
+        x00 = X0
+        for i in directions:
+            x01 = self.minimizeDirection(x00, i)
+            x00 = x01
+        
+        d = x01 - x0
+        x1 = self.minimizeDirection(x0,d)
+
+        if np.linalg.norm(x1-x0)<=stopError:
+            return x1
+        else:
+            return self.minimizePowell(x1, directions, stopError)
+        
+        
+
+
+        
+            
+
         
 
 
